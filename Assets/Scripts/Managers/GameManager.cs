@@ -13,7 +13,14 @@ namespace Farm.Managers
         protected override void Awake()
         {
             base.Awake();
+            // 创建并初始化所有 Manager
+            // 注意：这里创建挂载 Manager 时，在相应 Manager Awake() 中注册自身
             CreateManagerObject<InputManager>("InputManager");
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
         }
 
         /// <summary>创建 Manager 的 GameObject 并挂载组件。</summary>
