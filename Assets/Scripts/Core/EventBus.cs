@@ -6,18 +6,15 @@ namespace Farm.Core
 {
     /// <summary>
     /// 事件总线：模块间通信用 struct 事件按类型发布/订阅，彼此不直接引用。
-    /// 为什么自写而不是用 C# event / UnityEvent：
-    /// 1) 事件类型（struct）即协议，发布方与订阅方只认类型，解耦最彻底；
-    /// 2) UnityEvent 有编辑器序列化开销，泛型 Action 更灵活。
     /// 性能定位：EventBus 面向低频、跨系统的广播（时间/背包/对话变化），
     /// 高频每帧数据（输入、移动）请用直连调用，不要走事件。
     /// </summary>
     public static class EventBus
     {
-        // 和"逐个处理器 try-catch 隔离"，列表更直接。
+        // 订阅者列表：key=事件类型，value=回调列表。
         private static readonly Dictionary<Type, List<Delegate>> Handlers = new Dictionary<Type, List<Delegate>>();
 
-        // 与 ServiceLocator 同理，防止多线程并发读写。
+        // 与 ServiceLocator 同理，防止多线程并发读写
         private static readonly object SyncRoot = new object();
 
         /// <summary>
@@ -25,20 +22,25 @@ namespace Farm.Core
         /// </summary>
         public static void Subscribe<T>(Action<T> handler) where T : struct
         {
+            // 1.参数校验
             if (handler == null)
             {
                 Debug.LogError($"[EventBus] 订阅失败：{typeof(T).Name} 的处理器为 null。");
                 return;
             }
 
+            // 2.锁定线程
             lock (SyncRoot)
             {
+                // 3.字典取值
                 Type type = typeof(T);
                 if (!Handlers.TryGetValue(type, out List<Delegate> list))
                 {
+                    // 4.没有列表 则 创建列表
                     list = new List<Delegate>();
                     Handlers[type] = list;
                 }
+                // 5.列表添加
                 if (!list.Contains(handler))
                 {
                     list.Add(handler);
@@ -48,20 +50,25 @@ namespace Farm.Core
 
         /// <summary>
         /// 发布事件，通知所有订阅者。
-        /// 为什么复制快照再遍历：回调里如果订阅/退订会修改正在遍历的列表，
-        /// 复制一份遍历副本可避免"集合已修改"异常。
-        /// 为什么 try-catch 逐个隔离：一个处理器抛异常不该拖垮其他订阅者，
-        /// 记日志后继续分发，保证事件总线自身稳定。
+        ///
+        /// 为什么复制快照再遍历：回调里如果订阅/退订会修改正在遍历的列表
+        ///
+        /// 为什么 try-catch 逐个隔离：一个处理器抛异常不该拖垮其他订阅者
+        ///
         /// </summary>
         public static void Publish<T>(T eventData) where T : struct
         {
+            // 1.复制快照
             List<Delegate> snapshot;
+            // 2.锁定线程
             lock (SyncRoot)
             {
+                // 3.字典取值
                 if (!Handlers.TryGetValue(typeof(T), out List<Delegate> list))
                 {
                     return;
                 }
+                // 4.复制快照
                 snapshot = new List<Delegate>(list);
             }
 
@@ -81,16 +88,22 @@ namespace Farm.Core
 
         /// <summary>
         /// 取消订阅。
+        ///
         /// 为什么列表空时删键：避免字典里堆积大量空列表，保持结构干净。
+        ///
         /// </summary>
         public static void Unsubscribe<T>(Action<T> handler) where T : struct
         {
+            // 1.锁定线程
             lock (SyncRoot)
             {
+                // 2.字典取值
                 Type type = typeof(T);
                 if (Handlers.TryGetValue(type, out List<Delegate> list))
                 {
+                    // 3.列表移除
                     list.Remove(handler);
+                    // 4.列表空时删键
                     if (list.Count == 0)
                     {
                         Handlers.Remove(type);
