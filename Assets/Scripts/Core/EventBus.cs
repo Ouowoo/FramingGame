@@ -14,6 +14,9 @@ namespace Farm.Core
         // 订阅者列表：key=事件类型，value=回调列表。
         private static readonly Dictionary<Type, List<Delegate>> Handlers = new Dictionary<Type, List<Delegate>>();
 
+        // 正在发布中的事件类型：回调内再发同型事件会被拦截，防止无限递归。
+        private static readonly HashSet<Type> Publishing = new HashSet<Type>();
+
         // 与 ServiceLocator 同理，防止多线程并发读写
         private static readonly object SyncRoot = new object();
 
@@ -40,7 +43,7 @@ namespace Farm.Core
                     list = new List<Delegate>();
                     Handlers[type] = list;
                 }
-                // 5.列表添加
+                // 5.列表添加（Contains 只对同一委托实例去重；每次新建 lambda 会产生新实例导致重复订阅）
                 if (!list.Contains(handler))
                 {
                     list.Add(handler);
@@ -58,30 +61,51 @@ namespace Farm.Core
         /// </summary>
         public static void Publish<T>(T eventData) where T : struct
         {
+            Type type = typeof(T);
             // 1.复制快照
             List<Delegate> snapshot;
             // 2.锁定线程
             lock (SyncRoot)
             {
-                // 3.字典取值
-                if (!Handlers.TryGetValue(typeof(T), out List<Delegate> list))
+                // 3.重入检查：回调里再发同型事件会无限递归，直接忽略本次
+                if (Publishing.Contains(type))
+                {
+                    Debug.LogWarning($"[EventBus] 检测到 {type.Name} 事件重入发布，本次已忽略。");
+                    return;
+                }
+
+                // 4.字典取值
+                if (!Handlers.TryGetValue(type, out List<Delegate> list))
                 {
                     return;
                 }
-                // 4.复制快照
+                // 5.复制快照（避免回调中修改列表）
                 snapshot = new List<Delegate>(list);
+                // 6.标记发布中
+                Publishing.Add(type);
             }
 
-            // 锁外执行回调：回调里再 Subscribe/Unsubscribe 不会与持锁冲突，也减少持锁时间。
-            for (int i = 0; i < snapshot.Count; i++)
+            try
             {
-                try
+                // 锁外执行回调：回调里再 Subscribe/Unsubscribe 不会与持锁冲突，也减少持锁时间。
+                for (int i = 0; i < snapshot.Count; i++)
                 {
-                    ((Action<T>)snapshot[i])(eventData);
+                    try
+                    {
+                        ((Action<T>)snapshot[i])(eventData);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError($"[EventBus] 处理 {type.Name} 事件时订阅者抛异常：{e}");
+                    }
                 }
-                catch (Exception e)
+            }
+            finally
+            {
+                // 7.解除发布标记：异常也要清除，否则该类型后续无法再发布
+                lock (SyncRoot)
                 {
-                    Debug.LogError($"[EventBus] 处理 {typeof(T).Name} 事件时订阅者抛异常：{e}");
+                    Publishing.Remove(type);
                 }
             }
         }

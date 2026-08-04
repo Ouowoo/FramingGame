@@ -61,15 +61,18 @@ namespace Farm.Core
 
         /// <summary>
         /// 注销服务实例。
-        /// 为什么成功移除要 Log 提示：注销通常发生在 Manager 销毁时，
-        /// 日志能帮助确认生命周期确实执行到了。
+        /// 为什么带实例参数校验身份：同类型可能因热重载残留存在两个实例，
+        /// 只按类型删会让"先销毁的旧实例"误删"后注册的新实例"；
+        /// 校验"当前注册的正是这个实例"才删，避免误伤。
         /// </summary>
-        public static void Unregister<T>() where T : IGameService
+        public static void Unregister<T>(T service) where T : IGameService
         {
             lock (SyncRoot)
             {
-                if (Services.Remove(typeof(T)))
+                if (Services.TryGetValue(typeof(T), out IGameService current)
+                    && ReferenceEquals(current, service))
                 {
+                    Services.Remove(typeof(T));
                     Debug.Log($"[ServiceLocator] 已注销服务 {typeof(T).Name}。");
                 }
             }

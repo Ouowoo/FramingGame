@@ -18,7 +18,9 @@ namespace Farm.Managers
 
         protected virtual void OnDestroy()
         {
-            ServiceLocator.Unregister<T>();
+            // 传自身实例：Unregister 校验"当前注册的正是我"才删，
+            // 防止同类型残留实例互相误删注册。
+            ServiceLocator.Unregister<T>(this as T);
         }
     }
 }
