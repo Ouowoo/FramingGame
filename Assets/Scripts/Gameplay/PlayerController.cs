@@ -7,10 +7,9 @@ namespace Farm.Gameplay
     /// 玩家移动控制器：通过 ServiceLocator 获取输入，避免直接依赖 Input 类。
     /// 为什么 velocity 放 FixedUpdate：物理驱动移动，速度稳定、不受帧率波动影响；
     /// 为什么翻转/动画放 Update：它们是视觉表现，跟渲染帧走更顺滑。
+    /// 为什么动画交给 PlayerAnimationController：角色是分层结构，必须由它统一驱动 6 个部位。
     /// </summary>
-
     [RequireComponent(typeof(Rigidbody2D))]
-    [RequireComponent(typeof(Animator))]
     public class PlayerController : MonoBehaviour
     {
         [SerializeField, Tooltip("走路速度")]
@@ -23,26 +22,19 @@ namespace Farm.Gameplay
         private Rigidbody2D rb;
 
         [SerializeField]
-        private Animator anim;
+        private PlayerAnimationController playerAnimationController;  // 手动拖入，挂 Player 根节点
         private IInputManager input;
 
-        // 为什么记录初始缩放：翻转时只改符号，避免抹掉 prefab 设定的非 1 缩放。
-        private Vector3 originalScale;
-
-        // 为什么单独记录朝向：松开方向键后仍需保持最后移动方向，不能直接取 MoveInput.x（会归零）。
-        private float lastFacingDirection = 1f;
 
         private void Awake()
         {
-            if (rb == null) rb = GetComponent<Rigidbody2D>();   // 没拖就自动补
-            if (anim == null) anim = GetComponent<Animator>();  // 没拖就自动补
+            if (rb == null) rb = GetComponent<Rigidbody2D>();                              // 没拖就自动补
         }
 
         private void Start()
         {
             // Start 保证在所有 Awake 之后执行：此时 GameManager 已创建并注册 InputManager。
             input = ServiceLocator.Get<IInputManager>();
-            originalScale = transform.localScale;
         }
 
         private void FixedUpdate()
@@ -62,22 +54,28 @@ namespace Farm.Gameplay
         {
             Vector2 move = input.MoveInput;
 
-            // 有水平输入时更新朝向（1=右，-1=左）。
-            if (Mathf.Abs(move.x) > 0.01f)
-            {
-                lastFacingDirection = Mathf.Sign(move.x);
-            }
 
-            // 用记录的初始缩放乘符号：翻转不丢失 prefab 设定的非 1 缩放。
-            Vector3 scale = originalScale;
-            scale.x = originalScale.x * lastFacingDirection;
-            transform.localScale = scale;
-
-            // 动画参数 Speed：走路 0~1，跑步翻倍到 0~2，驱动 Blend Tree（Idle 0 / Walk 1 / Run 2）。
-            if (anim != null)
+            // 动画驱动：方向参数必须先设置（Transition 需要 xInput/yInput 路由到对应方向的
+            // Walk/Run 子状态），之后再按移动状态切换走路/跑步/待机，由 PlayerAnimationController 统一广播。
+            if (playerAnimationController != null)
             {
-                float speedValue = move.magnitude * (input.IsRunning ? 2f : 1f);
-                anim.SetFloat("Speed", speedValue);
+                playerAnimationController.SetMoveDirection(move);
+
+                if (move.magnitude > 0.01f)
+                {
+                    if (input.IsRunning)
+                    {
+                        playerAnimationController.SetRunning();
+                    }
+                    else
+                    {
+                        playerAnimationController.SetWalking();
+                    }
+                }
+                else
+                {
+                    playerAnimationController.SetIdle();
+                }
             }
         }
     }
