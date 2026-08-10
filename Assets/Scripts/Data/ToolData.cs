@@ -15,12 +15,6 @@ namespace Farm.Data
         [SerializeField, Tooltip("工具功能类型")]
         private ToolType toolType;
 
-        [SerializeField, Tooltip("工具等级（1=基础，影响效率和范围）")]
-        private int toolLevel = 1;
-
-        [SerializeField, Tooltip("单次使用消耗体力")]
-        private int energyCost = 2;
-
         [SerializeField, Tooltip("使用范围（1=单格）")]
         private int range = 1;
 
@@ -30,20 +24,8 @@ namespace Farm.Data
 
         // —— 公共只读属性 ——
         public ToolType ToolType => toolType;
-        public int ToolLevel => toolLevel;
-        public int EnergyCost => energyCost;
         public int Range => range;
         public AudioClip UseSound => useSound;
-
-        /// <summary>
-        /// 体力判定：当前体力是否足够挥动工具。
-        /// 为什么只返回 bool：不足不是异常——只是"不能用"，调用方拿到 false 后
-        /// 自行弹"体力不足"提示，数据层不关心 UI。
-        /// </summary>
-        public bool CanUse(int currentEnergy)
-        {
-            return currentEnergy >= energyCost;
-        }
 
         // 为什么用 Reset()：Unity 编辑器在 CreateAssetMenu 创建 .asset 时自动调用，
         // 保证每个新建工具资产 maxStack=1（工具不可堆叠），不用手动改。

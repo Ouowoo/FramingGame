@@ -8,7 +8,6 @@ namespace Farm.Data
     /// 不同存档加载同一份配置，内存中只有一份，不会每次读盘都 new。
     /// 为什么字段 private + 属性只读：外部只能拿值不能改，数据流向单向（SO → 使用方）。
     /// </summary>
-    [System.Serializable]
     [CreateAssetMenu(fileName = "NewItem", menuName = "Farm/Item")]
     public class ItemData : ScriptableObject
     {
@@ -25,9 +24,6 @@ namespace Farm.Data
         [SerializeField, Tooltip("图标")]
         private Sprite icon;
 
-        [SerializeField, TextArea(2, 4), Tooltip("描述文本")]
-        private string description;
-
         [Header("堆叠与价格")]
         [SerializeField, Tooltip("最大堆叠数（99=种子/材料，1=工具）")]
         private int maxStack = 99;
@@ -43,7 +39,6 @@ namespace Farm.Data
         public string ItemName => itemName;
         public ItemType ItemType => itemType;
         public Sprite Icon => icon;
-        public string Description => description;
         public int MaxStack => maxStack;
         public int SellPrice => sellPrice;
         public int BuyPrice => buyPrice;
@@ -62,7 +57,7 @@ namespace Farm.Data
         /// </summary>
         public virtual string GetTooltip()
         {
-            return $"{itemName}\n{description}\n" +
+            return $"{itemName}\n" +
                    (sellPrice > 0 ? $"售价：{sellPrice}G\n" : "") +
                    (buyPrice > 0 ? $"购价：{buyPrice}G" : "");
         }
