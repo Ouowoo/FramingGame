@@ -15,8 +15,8 @@ namespace Farm.Data
         Tool,
         /// <summary>材料：木头/石头/矿石等建造/合成用。</summary>
         Material,
-        /// <summary>食物：食用恢复体力。</summary>
-        Food,
+        /// <summary>交互物品：使用工具交互的物品。</summary>
+        Interact,
         /// <summary>其他：任务道具/钥匙等不归类物品。</summary>
         Other,
     }

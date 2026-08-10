@@ -20,9 +20,22 @@ namespace Farm.Data
         Scythe = 10005,
         Basket = 10006,
 
-        // —— 预留：种子（CarrotSeed / CabbageSeed / ...）——
-        // —— 预留：作物（Carrot / Cabbage / ...）——
-        // —— 预留：材料（Wood / Stone / ...）——
+        // —— 种子（20001～20999）——
+        ParsnipSeeds = 20001,
+        Stone1Seed = 20002,
+        Stone2Seed = 20003,
+
+        // —— 作物（21001～21999）——
+        Parsnip = 21001,
+        Sweetcorn = 21002,
+        Pumpkin = 21003,
+
+        // —— 材料（30001～39999）——
+        Wood = 30001,
+        Stone = 30002,
+        Acorn = 30003,
+        PineCone = 30004,
+
         // —— 预留：食物 ——
         // —— 预留：其他 ——
     }

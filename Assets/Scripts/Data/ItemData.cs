@@ -35,6 +35,10 @@ namespace Farm.Data
         [SerializeField, Tooltip("购买价（0=不可购）")]
         private int buyPrice;
 
+        [Header("交互")]
+        [SerializeField, Tooltip("是否可直接拾取（场景物件需工具处理→false）")]
+        private bool canBePickedUp = true;
+
         // —— 公共只读属性 ——
         public ItemID ItemID => itemID;
         public string ItemName => itemName;
@@ -43,6 +47,7 @@ namespace Farm.Data
         public int MaxStack => maxStack;
         public int SellPrice => sellPrice;
         public int BuyPrice => buyPrice;
+        public bool CanBePickedUp => canBePickedUp;
 
         /// <summary>
         /// 获取显示名（子类可 override 加前缀，如"铁 斧头"）。
@@ -76,6 +81,18 @@ namespace Farm.Data
         protected void SetItemType(ItemType value)
         {
             itemType = value;
+        }
+
+        /// <summary>
+        /// 供子类强制关闭拾取（场景物件不可直接拾取，必须工具处理）。
+        /// 为什么用 SetXXX 模式：与 SetMaxStack/SetItemType 一致，字段 private
+        /// 无法被子类直接赋值，受控入口是最小暴露面。
+        /// 为什么默认 true：绝大多数物品（种子/材料/收获物）都能拾取，
+        /// 默认开启让 Item 菜单建资产时不用手动设。
+        /// </summary>
+        protected void SetCanPickUp(bool value)
+        {
+            canBePickedUp = value;
         }
     }
 }
