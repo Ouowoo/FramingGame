@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Farm.Data
@@ -70,6 +71,11 @@ namespace Farm.Data
         protected void SetMaxStack(int value)
         {
             maxStack = value;
+        }
+
+        protected void SetItemType(ItemType value)
+        {
+            itemType = value;
         }
     }
 }

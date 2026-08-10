@@ -11,15 +11,13 @@ namespace Farm.Data
     [CreateAssetMenu(fileName = "NewTool", menuName = "Farm/Tool")]
     public class ToolData : ItemData
     {
-        [Header("工具属性")]
-        [SerializeField, Tooltip("工具功能类型")]
+        [Header("工具属性")] [SerializeField, Tooltip("工具功能类型")]
         private ToolType toolType;
 
         [SerializeField, Tooltip("使用范围（1=单格）")]
         private int range = 1;
 
-        [Header("音效")]
-        [SerializeField, Tooltip("挥舞/使用音效")]
+        [Header("音效")] [SerializeField, Tooltip("挥舞/使用音效")]
         private AudioClip useSound;
 
         // —— 公共只读属性 ——
@@ -32,6 +30,7 @@ namespace Farm.Data
         private void Reset()
         {
             SetMaxStack(1);
+            SetItemType(ItemType.Tool);
         }
     }
 }
