@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: WateringCan
   m_EditorClassIdentifier: 
   itemID: 10002
-  itemName: WateringCan
+  itemName: "\u6C34\u58F6"
   itemType: 2
-  icon: {fileID: 0}
+  icon: {fileID: 21300136, guid: 853ac38383c680342ac7e688bf29b197, type: 3}
   maxStack: 1
   sellPrice: 0
   buyPrice: 0

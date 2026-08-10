@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Axe
   m_EditorClassIdentifier: 
   itemID: 10003
-  itemName: Axe
+  itemName: "\u65A7\u5934"
   itemType: 2
-  icon: {fileID: 0}
+  icon: {fileID: 21300010, guid: 853ac38383c680342ac7e688bf29b197, type: 3}
   maxStack: 1
   sellPrice: 0
   buyPrice: 0

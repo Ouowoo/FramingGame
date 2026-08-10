@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Basket
   m_EditorClassIdentifier: 
   itemID: 10006
-  itemName: Basket
+  itemName: "\u7BEE\u5B50"
   itemType: 2
-  icon: {fileID: 0}
+  icon: {fileID: 21300504, guid: 853ac38383c680342ac7e688bf29b197, type: 3}
   maxStack: 1
   sellPrice: 0
   buyPrice: 0

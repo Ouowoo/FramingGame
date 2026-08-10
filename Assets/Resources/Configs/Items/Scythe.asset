@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Scythe
   m_EditorClassIdentifier: 
   itemID: 10005
-  itemName: Scythe
+  itemName: "\u9570\u5200"
   itemType: 2
-  icon: {fileID: 0}
+  icon: {fileID: 21300506, guid: 853ac38383c680342ac7e688bf29b197, type: 3}
   maxStack: 1
   sellPrice: 0
   buyPrice: 0

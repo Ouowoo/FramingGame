@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Hoe
   m_EditorClassIdentifier: 
   itemID: 10001
-  itemName: Hoe
+  itemName: "\u9504\u5934"
   itemType: 2
-  icon: {fileID: 0}
+  icon: {fileID: 21300052, guid: 853ac38383c680342ac7e688bf29b197, type: 3}
   maxStack: 1
   sellPrice: 0
   buyPrice: 0
